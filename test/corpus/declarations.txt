@@ -1,0 +1,682 @@
+================================================================================
+use: simple import
+================================================================================
+
+use std.types.bool;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (use_declaration
+    path: (module_path
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+use: aliased import
+================================================================================
+
+use h: mach.lang_test.helpers;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (use_declaration
+    alias: (identifier)
+    path: (module_path
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+use: single segment
+================================================================================
+
+use allocator;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (use_declaration
+    path: (module_path
+      (identifier))))
+
+================================================================================
+val: simple value declaration
+================================================================================
+
+val CONSTANT: i64 = 42;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))
+
+================================================================================
+val: pointer type value
+================================================================================
+
+val p: *u8 = nil;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (pointer_type
+      (primitive_type))
+    value: (nil_literal)))
+
+================================================================================
+var: without initializer
+================================================================================
+
+var x: i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    type: (primitive_type)))
+
+================================================================================
+var: with initializer
+================================================================================
+
+var x: i64 = 10;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))
+
+================================================================================
+def: type alias for primitive
+================================================================================
+
+def Age: i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (type_alias_declaration
+    name: (identifier)
+    type: (primitive_type)))
+
+================================================================================
+def: type alias for pointer
+================================================================================
+
+def Ptr: ptr;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (type_alias_declaration
+    name: (identifier)
+    type: (primitive_type)))
+
+================================================================================
+def: type alias for anonymous record
+================================================================================
+
+def IntPair: rec { a: i64; b: i64; };
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (type_alias_declaration
+    name: (identifier)
+    type: (record_type
+      (field_declaration_list
+        (field_declaration
+          name: (identifier)
+          type: (primitive_type))
+        (field_declaration
+          name: (identifier)
+          type: (primitive_type))))))
+
+================================================================================
+rec: simple record
+================================================================================
+
+rec Point {
+    x: i64;
+    y: i64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (record_declaration
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type)))))
+
+================================================================================
+rec: generic record single param
+================================================================================
+
+rec Wrap[T] {
+    value: T;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (record_declaration
+    name: (identifier)
+    (type_parameters
+      (identifier))
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (type_identifier
+          (identifier))))))
+
+================================================================================
+rec: generic record multiple params
+================================================================================
+
+rec Pair[T, U] {
+    left: T;
+    right: U;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (record_declaration
+    name: (identifier)
+    (type_parameters
+      (identifier)
+      (identifier))
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (type_identifier
+          (identifier)))
+      (field_declaration
+        name: (identifier)
+        type: (type_identifier
+          (identifier))))))
+
+================================================================================
+rec: nested record field types
+================================================================================
+
+rec Outer {
+    inner: Inner;
+    z: i64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (record_declaration
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (type_identifier
+          (identifier)))
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type)))))
+
+================================================================================
+uni: simple union
+================================================================================
+
+uni IntOrFloat {
+    i: i64;
+    f: f64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (union_declaration
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type)))))
+
+================================================================================
+uni: union with array field
+================================================================================
+
+uni WordBytes {
+    value: u32;
+    bytes: [4]u8;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (union_declaration
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))
+      (field_declaration
+        name: (identifier)
+        type: (array_type
+          size: (integer_literal)
+          element: (primitive_type))))))
+
+================================================================================
+fun: simple function
+================================================================================
+
+fun add(a: i64, b: i64) i64 {
+    ret a + b;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
+
+================================================================================
+fun: no return type
+================================================================================
+
+fun noop() {
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block)))
+
+================================================================================
+fun: value receiver method
+================================================================================
+
+fun (this: Point) sum() i64 {
+    ret this.x + this.y;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (method_receiver
+      receiver_name: (identifier)
+      receiver_type: (type_identifier
+        (identifier)))
+    name: (identifier)
+    (parameter_list)
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (field_expression
+            object: (identifier)
+            field: (identifier))
+          right: (field_expression
+            object: (identifier)
+            field: (identifier)))))))
+
+================================================================================
+fun: pointer receiver method
+================================================================================
+
+fun (this: *Point) move(dx: i64, dy: i64) {
+    this.x = this.x + dx;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (method_receiver
+      receiver_name: (identifier)
+      receiver_type: (pointer_type
+        (type_identifier
+          (identifier))))
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    (block
+      (expression_statement
+        (assignment_expression
+          left: (field_expression
+            object: (identifier)
+            field: (identifier))
+          right: (binary_expression
+            left: (field_expression
+              object: (identifier)
+              field: (identifier))
+            right: (identifier)))))))
+
+================================================================================
+fun: readonly ref receiver method
+================================================================================
+
+fun (this: &Lexer) match_suffix(start: i32, len: i32) i64 {
+    ret 0;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (method_receiver
+      receiver_name: (identifier)
+      receiver_type: (readonly_pointer_type
+        (type_identifier
+          (identifier))))
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+fun: generic function
+================================================================================
+
+fun identity[T](value: T) T {
+    ret value;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (type_parameters
+      (identifier))
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (type_identifier
+          (identifier))))
+    return_type: (type_identifier
+      (identifier))
+    (block
+      (return_statement
+        (identifier)))))
+
+================================================================================
+fun: generic method on generic receiver
+================================================================================
+
+fun (this: Pair[T, U]) left_val() T {
+    ret this.left;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (method_receiver
+      receiver_name: (identifier)
+      receiver_type: (generic_type
+        name: (identifier)
+        (type_identifier
+          (identifier))
+        (type_identifier
+          (identifier))))
+    name: (identifier)
+    (parameter_list)
+    return_type: (type_identifier
+      (identifier))
+    (block
+      (return_statement
+        (field_expression
+          object: (identifier)
+          field: (identifier))))))
+
+================================================================================
+fun: variadic function
+================================================================================
+
+fun sum(count: i64, ...) i64 {
+    ret 0;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (variadic_parameter))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+test: simple test declaration
+================================================================================
+
+test "smoke: pass returns 1" {
+    ret 1;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (test_declaration
+    name: (string_literal)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+pub: public value
+================================================================================
+
+pub val CONSTANT: i64 = 42;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (public_declaration
+    (value_declaration
+      name: (identifier)
+      type: (primitive_type)
+      value: (integer_literal))))
+
+================================================================================
+pub: public function
+================================================================================
+
+pub fun add(a: i64, b: i64) i64 {
+    ret a + b;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (public_declaration
+    (function_declaration
+      name: (identifier)
+      (parameter_list
+        (parameter
+          name: (identifier)
+          type: (primitive_type))
+        (parameter
+          name: (identifier)
+          type: (primitive_type)))
+      return_type: (primitive_type)
+      (block
+        (return_statement
+          (binary_expression
+            left: (identifier)
+            right: (identifier)))))))
+
+================================================================================
+pub: public record
+================================================================================
+
+pub rec Point {
+    x: i64;
+    y: i64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (public_declaration
+    (record_declaration
+      name: (identifier)
+      (field_declaration_list
+        (field_declaration
+          name: (identifier)
+          type: (primitive_type))
+        (field_declaration
+          name: (identifier)
+          type: (primitive_type))))))
+
+================================================================================
+ext: extern function declaration
+================================================================================
+
+ext "C" write: fun(fd: i32, buf: *u8, count: u64) i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extern_declaration
+    abi: (string_literal)
+    name: (identifier)
+    type: (function_type
+      (identifier)
+      (primitive_type)
+      (identifier)
+      (pointer_type
+        (primitive_type))
+      (identifier)
+      (primitive_type)
+      return_type: (primitive_type))))
+
+================================================================================
+pub ext: public extern declaration
+================================================================================
+
+pub ext "C" malloc: fun(size: u64) *u8;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (public_declaration
+    (extern_declaration
+      abi: (string_literal)
+      name: (identifier)
+      type: (function_type
+        (identifier)
+        (primitive_type)
+        return_type: (pointer_type
+          (primitive_type))))))
+
+================================================================================
+multiple declarations in sequence
+================================================================================
+
+use std.types.bool;
+
+rec Point {
+    x: i64;
+    y: i64;
+}
+
+fun (p: *Point) sum() i64 {
+    ret p.x + p.y;
+}
+
+val PRIVATE_CONST: i64 = 123;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (use_declaration
+    path: (module_path
+      (identifier)
+      (identifier)
+      (identifier)))
+  (record_declaration
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))))
+  (function_declaration
+    (method_receiver
+      receiver_name: (identifier)
+      receiver_type: (pointer_type
+        (type_identifier
+          (identifier))))
+    name: (identifier)
+    (parameter_list)
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (field_expression
+            object: (identifier)
+            field: (identifier))
+          right: (field_expression
+            object: (identifier)
+            field: (identifier))))))
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))

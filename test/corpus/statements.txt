@@ -1,0 +1,800 @@
+================================================================================
+if: simple if
+================================================================================
+
+fun f() {
+    if (x == 1) {
+        ret 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (return_statement
+            (integer_literal)))))))
+
+================================================================================
+if/or: two branches
+================================================================================
+
+fun f() {
+    if (x == 1) {
+        y = 1;
+    }
+    or {
+        y = 2;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (integer_literal))))
+        (or_clause
+          (block
+            (expression_statement
+              (assignment_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+if/or: three branch chain
+================================================================================
+
+fun f() {
+    if (x == 1) {
+        y = 1;
+    }
+    or (x == 2) {
+        y = 2;
+    }
+    or {
+        y = 3;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (integer_literal))))
+        (or_clause
+          condition: (binary_expression
+            left: (identifier)
+            right: (integer_literal))
+          (block
+            (expression_statement
+              (assignment_expression
+                left: (identifier)
+                right: (integer_literal)))))
+        (or_clause
+          (block
+            (expression_statement
+              (assignment_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+if: nested if
+================================================================================
+
+fun f() {
+    if (x > 0) {
+        if (x > 3) {
+            ret 1;
+        }
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (if_statement
+            condition: (binary_expression
+              left: (identifier)
+              right: (integer_literal))
+            (block
+              (return_statement
+                (integer_literal)))))))))
+
+================================================================================
+for: simple loop
+================================================================================
+
+fun f() {
+    for (i < 10) {
+        i = i + 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+for: infinite loop (no condition)
+================================================================================
+
+fun f() {
+    for {
+        brk;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        (block
+          (break_statement))))))
+
+================================================================================
+for: nested loops
+================================================================================
+
+fun f() {
+    for (i < 3) {
+        for (j < 2) {
+            sum = sum + 1;
+        }
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (for_statement
+            condition: (binary_expression
+              left: (identifier)
+              right: (integer_literal))
+            (block
+              (expression_statement
+                (assignment_expression
+                  left: (identifier)
+                  right: (binary_expression
+                    left: (identifier)
+                    right: (integer_literal)))))))))))
+
+================================================================================
+for: loop with break
+================================================================================
+
+fun f() {
+    for (i < 100) {
+        if (i == 42) {
+            brk;
+        }
+        i = i + 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (if_statement
+            condition: (binary_expression
+              left: (identifier)
+              right: (integer_literal))
+            (block
+              (break_statement)))
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+for: loop with continue
+================================================================================
+
+fun f() {
+    for (i < 6) {
+        i = i + 1;
+        if (i % 2 == 0) {
+            cnt;
+        }
+        sum = sum + i;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal))))
+          (if_statement
+            condition: (binary_expression
+              left: (binary_expression
+                left: (identifier)
+                right: (integer_literal))
+              right: (integer_literal))
+            (block
+              (continue_statement)))
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (identifier)))))))))
+
+================================================================================
+ret: return without value
+================================================================================
+
+fun f() {
+    ret;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (return_statement))))
+
+================================================================================
+ret: return with value
+================================================================================
+
+fun f() i64 {
+    ret 42;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+ret: return with expression
+================================================================================
+
+fun f() i64 {
+    ret a + b;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
+
+================================================================================
+brk: standalone break
+================================================================================
+
+fun f() {
+    for (i < 10) {
+        brk;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (break_statement))))))
+
+================================================================================
+cnt: standalone continue
+================================================================================
+
+fun f() {
+    for (i < 10) {
+        cnt;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (continue_statement))))))
+
+================================================================================
+fin: defer expression statement
+================================================================================
+
+fun f() {
+    fin x = 1;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (defer_statement
+        (expression_statement
+          (assignment_expression
+            left: (identifier)
+            right: (integer_literal)))))))
+
+================================================================================
+fin: defer deref assignment
+================================================================================
+
+fun f() {
+    fin @out = 2;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (defer_statement
+        (expression_statement
+          (assignment_expression
+            left: (unary_expression
+              operand: (identifier))
+            right: (integer_literal)))))))
+
+================================================================================
+fin: defer in block scope
+================================================================================
+
+fun f() {
+    {
+        fin x = x * 2;
+        fin x = x + 5;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (block
+        (defer_statement
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))
+        (defer_statement
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+fin: defer in loop
+================================================================================
+
+fun f() {
+    for (i < 3) {
+        fin x = x + 1;
+        i = i + 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (defer_statement
+            (expression_statement
+              (assignment_expression
+                left: (identifier)
+                right: (binary_expression
+                  left: (identifier)
+                  right: (integer_literal)))))
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+asm: simple inline assembly
+================================================================================
+
+fun f() {
+    asm { "ud2" }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (asm_statement
+        (string_literal)))))
+
+================================================================================
+asm: with isa block
+================================================================================
+
+fun f() {
+    asm {
+        x86_64 {
+            "mov rax, 0"
+            "ret"
+        }
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (asm_statement
+        (asm_isa_block
+          isa: (identifier)
+          (string_literal)
+          (string_literal))))))
+
+================================================================================
+comptime: $if true branch
+================================================================================
+
+$if (1 == 1) {
+    var x: i64 = 1;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_if_statement
+    condition: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))
+    (block
+      (variable_declaration
+        name: (identifier)
+        type: (primitive_type)
+        value: (integer_literal)))))
+
+================================================================================
+comptime: $if with $or
+================================================================================
+
+$if (1 == 0) {
+    var x: i64 = 1;
+} $or {
+    var x: i64 = 2;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_if_statement
+    condition: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))
+    (block
+      (variable_declaration
+        name: (identifier)
+        type: (primitive_type)
+        value: (integer_literal)))
+    (comptime_or_clause
+      (block
+        (variable_declaration
+          name: (identifier)
+          type: (primitive_type)
+          value: (integer_literal))))))
+
+================================================================================
+comptime: nested $if
+================================================================================
+
+$if (1 == 1) {
+    $if (2 == 2) {
+        var x: i64 = 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_if_statement
+    condition: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))
+    (block
+      (comptime_if_statement
+        condition: (binary_expression
+          left: (integer_literal)
+          right: (integer_literal))
+        (block
+          (variable_declaration
+            name: (identifier)
+            type: (primitive_type)
+            value: (integer_literal)))))))
+
+================================================================================
+comptime: $if in function body
+================================================================================
+
+fun f() {
+    $if (1 == 1) {
+        var x: i64 = 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (comptime_if_statement
+        condition: (binary_expression
+          left: (integer_literal)
+          right: (integer_literal))
+        (block
+          (variable_declaration
+            name: (identifier)
+            type: (primitive_type)
+            value: (integer_literal)))))))
+
+================================================================================
+comptime: attribute assignment
+================================================================================
+
+$main.symbol = "main";
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_expression_statement
+    (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier))
+      (string_literal))))
+
+================================================================================
+comptime: deep field path
+================================================================================
+
+$mach.build.target.os.id;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_expression_statement
+    (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+comptime: intrinsic call
+================================================================================
+
+$error("not implemented");
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_expression_statement
+    (comptime_expression
+      name: (identifier)
+      (string_literal))))
+
+================================================================================
+val and var inside function body
+================================================================================
+
+fun f() {
+    val a: i64 = 10;
+    var b: i64 = 20;
+    var c: i64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (value_declaration
+        name: (identifier)
+        type: (primitive_type)
+        value: (integer_literal))
+      (variable_declaration
+        name: (identifier)
+        type: (primitive_type)
+        value: (integer_literal))
+      (variable_declaration
+        name: (identifier)
+        type: (primitive_type)))))
+
+================================================================================
+mixed statements in function body
+================================================================================
+
+fun classify(x: i64) i64 {
+    if (x < 0) {
+        ret 0 - 1;
+    }
+    if (x == 0) {
+        ret 0;
+    }
+    ret 1;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (return_statement
+            (binary_expression
+              left: (integer_literal)
+              right: (integer_literal)))))
+      (if_statement
+        condition: (binary_expression
+          left: (identifier)
+          right: (integer_literal))
+        (block
+          (return_statement
+            (integer_literal))))
+      (return_statement
+        (integer_literal)))))

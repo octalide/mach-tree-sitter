@@ -1,0 +1,30 @@
+# Build artifacts
+/build/
+/target/
+*.wasm
+
+# Node
+/node_modules/
+/bindings/
+
+# Tree-sitter generated
+/binding.gyp
+/Makefile
+/CMakeLists.txt
+/Package.swift
+/Cargo.toml
+/go.mod
+/go.sum
+/pyproject.toml
+/setup.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

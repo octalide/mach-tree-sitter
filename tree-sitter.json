@@ -1,0 +1,36 @@
+{
+  "grammars": [
+    {
+      "name": "mach",
+      "camelcase": "Mach",
+      "scope": "source.mach",
+      "path": ".",
+      "file-types": [
+        "mach"
+      ],
+      "highlights": "queries/highlights.scm",
+      "injection-regex": "^mach$"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for the Mach programming language",
+    "authors": [
+      {
+        "name": "octalide"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/octalide/tree-sitter-mach.git"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true
+  }
+}

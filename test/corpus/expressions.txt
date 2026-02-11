@@ -1,0 +1,985 @@
+================================================================================
+binary: addition
+================================================================================
+
+val x: i64 = 1 + 2;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))))
+
+================================================================================
+binary: subtraction
+================================================================================
+
+val x: i64 = 10 - 3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))))
+
+================================================================================
+binary: multiplication
+================================================================================
+
+val x: i64 = 4 * 5;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))))
+
+================================================================================
+binary: division
+================================================================================
+
+val x: i64 = 10 / 2;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))))
+
+================================================================================
+binary: modulo
+================================================================================
+
+val x: i64 = 10 % 3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))))
+
+================================================================================
+binary: equality
+================================================================================
+
+val x: i64 = a == b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: inequality
+================================================================================
+
+val x: i64 = a != b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: less than
+================================================================================
+
+val x: i64 = a < b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: greater than or equal
+================================================================================
+
+val x: i64 = a >= b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: logical and
+================================================================================
+
+val x: i64 = a && b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: logical or
+================================================================================
+
+val x: i64 = a || b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: bitwise and
+================================================================================
+
+val x: i64 = a & b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: bitwise or
+================================================================================
+
+val x: i64 = a | b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: bitwise xor
+================================================================================
+
+val x: i64 = a ^ b;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+================================================================================
+binary: left shift
+================================================================================
+
+val x: i64 = a << 2;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (integer_literal))))
+
+================================================================================
+binary: right shift
+================================================================================
+
+val x: i64 = a >> 2;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (identifier)
+      right: (integer_literal))))
+
+================================================================================
+binary: precedence mul before add
+================================================================================
+
+val x: i64 = 1 + 2 * 3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (integer_literal)
+      right: (binary_expression
+        left: (integer_literal)
+        right: (integer_literal)))))
+
+================================================================================
+binary: precedence add left-assoc
+================================================================================
+
+val x: i64 = 1 + 2 + 3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (binary_expression
+        left: (integer_literal)
+        right: (integer_literal))
+      right: (integer_literal))))
+
+================================================================================
+binary: precedence comparison before logical
+================================================================================
+
+val x: i64 = a < b && c > d;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (binary_expression
+        left: (identifier)
+        right: (identifier))
+      right: (binary_expression
+        left: (identifier)
+        right: (identifier)))))
+
+================================================================================
+unary: negate
+================================================================================
+
+val x: i64 = -a;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (unary_expression
+      operand: (identifier))))
+
+================================================================================
+unary: logical not
+================================================================================
+
+val x: i64 = !a;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (unary_expression
+      operand: (identifier))))
+
+================================================================================
+unary: bitwise not
+================================================================================
+
+val x: i64 = ~a;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (unary_expression
+      operand: (identifier))))
+
+================================================================================
+unary: address-of
+================================================================================
+
+val p: *i64 = ?x;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (pointer_type
+      (primitive_type))
+    value: (unary_expression
+      operand: (identifier))))
+
+================================================================================
+unary: dereference
+================================================================================
+
+val x: i64 = @p;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (unary_expression
+      operand: (identifier))))
+
+================================================================================
+cast: simple cast
+================================================================================
+
+val x: u8 = y::u8;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (cast_expression
+      value: (identifier)
+      type: (primitive_type))))
+
+================================================================================
+cast: pointer cast
+================================================================================
+
+val p: ptr = q::ptr;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (cast_expression
+      value: (identifier)
+      type: (primitive_type))))
+
+================================================================================
+cast: cast to pointer type
+================================================================================
+
+val p: *i64 = raw::*i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (pointer_type
+      (primitive_type))
+    value: (cast_expression
+      value: (identifier)
+      type: (pointer_type
+        (primitive_type)))))
+
+================================================================================
+cast: parenthesized expression cast
+================================================================================
+
+val x: u8 = ('0' + rem)::u8;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (cast_expression
+      value: (parenthesized_expression
+        (binary_expression
+          left: (char_literal)
+          right: (identifier)))
+      type: (primitive_type))))
+
+================================================================================
+call: simple function call
+================================================================================
+
+val x: i64 = add(1, 2);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (identifier)
+      (argument_list
+        (integer_literal)
+        (integer_literal)))))
+
+================================================================================
+call: no arguments
+================================================================================
+
+val x: i64 = get();
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (identifier)
+      (argument_list))))
+
+================================================================================
+call: generic function call
+================================================================================
+
+val x: i64 = identity[i64](42);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (identifier)
+      (type_arguments
+        (primitive_type))
+      (argument_list
+        (integer_literal)))))
+
+================================================================================
+call: generic with multiple type args
+================================================================================
+
+val p: Pair = make_pair[i64, u64](7, 11);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (type_identifier
+      (identifier))
+    value: (call_expression
+      function: (identifier)
+      (type_arguments
+        (primitive_type)
+        (primitive_type))
+      (argument_list
+        (integer_literal)
+        (integer_literal)))))
+
+================================================================================
+call: method call
+================================================================================
+
+val s: i64 = p.sum();
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (field_expression
+        object: (identifier)
+        field: (identifier))
+      (argument_list))))
+
+================================================================================
+call: chained method
+================================================================================
+
+val s: i64 = obj.foo().bar();
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (field_expression
+        object: (call_expression
+          function: (field_expression
+            object: (identifier)
+            field: (identifier))
+          (argument_list))
+        field: (identifier))
+      (argument_list))))
+
+================================================================================
+call: module-qualified call
+================================================================================
+
+val x: i64 = h.add(10, 20);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (field_expression
+        object: (identifier)
+        field: (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)))))
+
+================================================================================
+call: type suffixed arguments
+================================================================================
+
+val s: i64 = sum(2, 10i64, 20i64);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (call_expression
+      function: (identifier)
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)))))
+
+================================================================================
+index: array index
+================================================================================
+
+val x: u8 = buf[0];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (index_expression
+      object: (identifier)
+      index: (integer_literal))))
+
+================================================================================
+index: computed index
+================================================================================
+
+val x: u8 = buf[i + 1];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (index_expression
+      object: (identifier)
+      index: (binary_expression
+        left: (identifier)
+        right: (integer_literal)))))
+
+================================================================================
+field: simple field access
+================================================================================
+
+val x: i64 = p.x;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (field_expression
+      object: (identifier)
+      field: (identifier))))
+
+================================================================================
+field: nested field access
+================================================================================
+
+val x: i64 = o.inner.x;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (field_expression
+      object: (field_expression
+        object: (identifier)
+        field: (identifier))
+      field: (identifier))))
+
+================================================================================
+field: pointer field access
+================================================================================
+
+val x: i64 = pp.x;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (field_expression
+      object: (identifier)
+      field: (identifier))))
+
+================================================================================
+assignment: simple assignment
+================================================================================
+
+fun f() {
+    x = 10;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (assignment_expression
+          left: (identifier)
+          right: (integer_literal))))))
+
+================================================================================
+assignment: field assignment
+================================================================================
+
+fun f() {
+    p.x = 5;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (assignment_expression
+          left: (field_expression
+            object: (identifier)
+            field: (identifier))
+          right: (integer_literal))))))
+
+================================================================================
+assignment: index assignment
+================================================================================
+
+fun f() {
+    buf[0] = 'a';
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (assignment_expression
+          left: (index_expression
+            object: (identifier)
+            index: (integer_literal))
+          right: (char_literal))))))
+
+================================================================================
+assignment: deref assignment
+================================================================================
+
+fun f() {
+    @p = 42;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (assignment_expression
+          left: (unary_expression
+            operand: (identifier))
+          right: (integer_literal))))))
+
+================================================================================
+parenthesized: simple grouping
+================================================================================
+
+val x: i64 = (1 + 2) * 3;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (binary_expression
+      left: (parenthesized_expression
+        (binary_expression
+          left: (integer_literal)
+          right: (integer_literal)))
+      right: (integer_literal))))
+
+================================================================================
+typed literal: simple record literal
+================================================================================
+
+val p: Point = Point{x: 3, y: 4};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (type_identifier
+      (identifier))
+    value: (typed_literal
+      type: (identifier)
+      (initializer_list
+        (initializer_field
+          name: (identifier)
+          value: (integer_literal))
+        (initializer_field
+          name: (identifier)
+          value: (integer_literal))))))
+
+================================================================================
+typed literal: generic record literal
+================================================================================
+
+val p: Pair[i64, i64] = Pair[i64, i64]{left: 3, right: 4};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (generic_type
+      name: (identifier)
+      (primitive_type)
+      (primitive_type))
+    value: (typed_literal
+      type: (generic_type
+        name: (identifier)
+        (primitive_type)
+        (primitive_type))
+      (initializer_list
+        (initializer_field
+          name: (identifier)
+          value: (integer_literal))
+        (initializer_field
+          name: (identifier)
+          value: (integer_literal))))))
+
+================================================================================
+typed literal: nested record literal
+================================================================================
+
+val line: Line = Line{
+    a: Point{x: 1, y: 2},
+    b: Point{x: 3, y: 4}
+};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (type_identifier
+      (identifier))
+    value: (typed_literal
+      type: (identifier)
+      (initializer_list
+        (initializer_field
+          name: (identifier)
+          value: (typed_literal
+            type: (identifier)
+            (initializer_list
+              (initializer_field
+                name: (identifier)
+                value: (integer_literal))
+              (initializer_field
+                name: (identifier)
+                value: (integer_literal)))))
+        (initializer_field
+          name: (identifier)
+          value: (typed_literal
+            type: (identifier)
+            (initializer_list
+              (initializer_field
+                name: (identifier)
+                value: (integer_literal))
+              (initializer_field
+                name: (identifier)
+                value: (integer_literal)))))))))
+
+================================================================================
+typed literal: union literal
+================================================================================
+
+val u: IntOrFloat = IntOrFloat{i: 12345};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (type_identifier
+      (identifier))
+    value: (typed_literal
+      type: (identifier)
+      (initializer_list
+        (initializer_field
+          name: (identifier)
+          value: (integer_literal))))))
+
+================================================================================
+varargs: varargs expression
+================================================================================
+
+fun f(x: i64, ...) {
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (variadic_parameter))
+    (block)))
+
+================================================================================
+complex: cast of pointer arithmetic
+================================================================================
+
+val x: i64 = (buf + offset)::ptr;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (cast_expression
+      value: (parenthesized_expression
+        (binary_expression
+          left: (identifier)
+          right: (identifier)))
+      type: (primitive_type))))
+
+================================================================================
+complex: address-of index expression
+================================================================================
+
+val p: *u8 = ?buf[i];
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (pointer_type
+      (primitive_type))
+    value: (unary_expression
+      operand: (index_expression
+        object: (identifier)
+        index: (identifier)))))
+
+================================================================================
+complex: deref of pointer addition
+================================================================================
+
+val x: u8 = @(buf + 3);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (unary_expression
+      operand: (parenthesized_expression
+        (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))

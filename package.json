@@ -1,0 +1,50 @@
+{
+  "name": "tree-sitter-mach",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for the Mach programming language",
+  "license": "MIT",
+  "author": "octalide",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/octalide/tree-sitter-mach.git"
+  },
+  "keywords": [
+    "tree-sitter",
+    "parser",
+    "mach",
+    "language"
+  ],
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
+    "generate": "tree-sitter generate",
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse",
+    "highlight": "tree-sitter highlight"
+  },
+  "dependencies": {
+    "node-addon-api": "^8.0.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.24.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree-sitter": {
+      "optional": true
+    }
+  },
+  "files": [
+    "grammar.js",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "queries/*",
+    "src/**",
+    "*.wasm"
+  ]
+}
