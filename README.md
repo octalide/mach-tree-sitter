@@ -95,23 +95,23 @@ npx tree-sitter highlight path/to/file.mach
 
 The grammar covers the full Mach language surface:
 
-| Feature | Status |
-|---|---|
-| Comments (`#`) | ✅ |
-| Imports (`use`) | ✅ |
-| Declarations (`val`, `var`, `def`, `ext`) | ✅ |
-| Records and unions (`rec`, `uni`) | ✅ |
-| Functions and methods (`fun`) | ✅ |
-| Control flow (`if`, `or`, `for`, `ret`, `brk`, `cnt`, `fin`) | ✅ |
-| Generics (`Type[T]`, `fun name[T]()`) | ✅ |
-| Pointers (`*T`, `&T`, `?`, `@`) | ✅ |
-| Arrays (`[N]T`) | ✅ |
-| Type casting (`::`) | ✅ |
-| Composite literals (`Type{ ... }`, `[N]T{ ... }`) | ✅ |
-| Inline assembly (`asm`) | ✅ |
-| Compile-time (`$if`, `$mach.*`, `$size_of`, etc.) | ✅ |
-| Tests (`test "name" { ... }`) | ✅ |
-| All operators and precedence levels | ✅ |
+| Feature                                                      | Status |
+| ------------------------------------------------------------ | ------ |
+| Comments (`#`)                                               | ✅     |
+| Imports (`use`)                                              | ✅     |
+| Declarations (`val`, `var`, `def`, `ext`)                    | ✅     |
+| Records and unions (`rec`, `uni`)                            | ✅     |
+| Functions and methods (`fun`)                                | ✅     |
+| Control flow (`if`, `or`, `for`, `ret`, `brk`, `cnt`, `fin`) | ✅     |
+| Generics (`Type[T]`, `fun name[T]()`)                        | ✅     |
+| Pointers (`*T`, `&T`, `?`, `@`)                              | ✅     |
+| Arrays (`[N]T`)                                              | ✅     |
+| Type casting (`::`)                                          | ✅     |
+| Composite literals (`Type{ ... }`, `[N]T{ ... }`)            | ✅     |
+| Inline assembly (`asm`)                                      | ✅     |
+| Compile-time (`$if`, `$mach.*`, `$size_of`, etc.)            | ✅     |
+| Tests (`test "name" { ... }`)                                | ✅     |
+| All operators and precedence levels                          | ✅     |
 
 ## Project Structure
 
