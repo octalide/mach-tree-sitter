@@ -534,7 +534,7 @@ asm: simple inline assembly
 ================================================================================
 
 fun f() {
-    asm { "ud2" }
+    asm x86_64 { ud2 }
 }
 
 --------------------------------------------------------------------------------
@@ -545,18 +545,17 @@ fun f() {
     (parameter_list)
     (block
       (asm_statement
-        (string_literal)))))
+        isa: (identifier)
+        body: (asm_body)))))
 
 ================================================================================
-asm: with isa block
+asm: multi-line body
 ================================================================================
 
 fun f() {
-    asm {
-        x86_64 {
-            "mov rax, 0"
-            "ret"
-        }
+    asm x86_64 {
+        mov rax, 0
+        ret
     }
 }
 
@@ -568,10 +567,8 @@ fun f() {
     (parameter_list)
     (block
       (asm_statement
-        (asm_isa_block
-          isa: (identifier)
-          (string_literal)
-          (string_literal))))))
+        isa: (identifier)
+        body: (asm_body)))))
 
 ================================================================================
 comptime: $if true branch
@@ -584,11 +581,11 @@ $if (1 == 1) {
 --------------------------------------------------------------------------------
 
 (source_file
-  (comptime_if_statement
+  (comptime_if_declaration
     condition: (binary_expression
       left: (integer_literal)
       right: (integer_literal))
-    (block
+    (declaration_block
       (variable_declaration
         name: (identifier)
         type: (primitive_type)
@@ -607,17 +604,17 @@ $if (1 == 0) {
 --------------------------------------------------------------------------------
 
 (source_file
-  (comptime_if_statement
+  (comptime_if_declaration
     condition: (binary_expression
       left: (integer_literal)
       right: (integer_literal))
-    (block
+    (declaration_block
       (variable_declaration
         name: (identifier)
         type: (primitive_type)
         value: (integer_literal)))
-    (comptime_or_clause
-      (block
+    (comptime_or_declaration_clause
+      (declaration_block
         (variable_declaration
           name: (identifier)
           type: (primitive_type)
@@ -636,16 +633,16 @@ $if (1 == 1) {
 --------------------------------------------------------------------------------
 
 (source_file
-  (comptime_if_statement
+  (comptime_if_declaration
     condition: (binary_expression
       left: (integer_literal)
       right: (integer_literal))
-    (block
-      (comptime_if_statement
+    (declaration_block
+      (comptime_if_declaration
         condition: (binary_expression
           left: (integer_literal)
           right: (integer_literal))
-        (block
+        (declaration_block
           (variable_declaration
             name: (identifier)
             type: (primitive_type)
@@ -725,6 +722,61 @@ $error("not implemented");
     (comptime_expression
       name: (identifier)
       (string_literal))))
+
+================================================================================
+comptime: intrinsic with type argument
+================================================================================
+
+val n: u32 = $size_of(Point);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      name: (identifier)
+      (identifier))))
+
+================================================================================
+comptime: declaration-scope $if chain
+================================================================================
+
+$if (1 == 2) {
+    use a.b;
+} $or (3 == 4) {
+    def X: u8;
+} $or {
+    pub def X: u16;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_if_declaration
+    condition: (binary_expression
+      left: (integer_literal)
+      right: (integer_literal))
+    (declaration_block
+      (use_declaration
+        path: (module_path
+          (identifier)
+          (identifier))))
+    (comptime_or_declaration_clause
+      condition: (binary_expression
+        left: (integer_literal)
+        right: (integer_literal))
+      (declaration_block
+        (type_alias_declaration
+          name: (identifier)
+          type: (primitive_type))))
+    (comptime_or_declaration_clause
+      (declaration_block
+        (type_alias_declaration
+          (modifiers)
+          name: (identifier)
+          type: (primitive_type))))))
 
 ================================================================================
 val and var inside function body

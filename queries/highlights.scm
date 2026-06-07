@@ -14,6 +14,7 @@
 
 ; Declaration keywords
 "use" @keyword.import
+"fwd" @keyword.import
 "pub" @keyword.modifier
 "ext" @keyword.modifier
 "def" @keyword.type
@@ -83,9 +84,6 @@
 (function_declaration
   name: (identifier) @function.definition)
 
-(method_receiver
-  receiver_name: (identifier) @variable.parameter)
-
 (parameter
   name: (identifier) @variable.parameter)
 
@@ -122,18 +120,11 @@
 (use_declaration
   alias: (identifier) @variable.module)
 
+(forward_declaration
+  alias: (identifier) @variable.module)
+
 (module_path
   (identifier) @module)
-
-; =============================================================================
-; Extern declarations
-; =============================================================================
-
-(extern_declaration
-  abi: (string_literal) @string.special)
-
-(extern_declaration
-  name: (identifier) @function)
 
 ; =============================================================================
 ; Test declarations
@@ -146,13 +137,21 @@
 ; Compile-time
 ; =============================================================================
 
-(comptime_expression) @keyword.directive
+(comptime_if_declaration
+  "$" @keyword.directive
+  "if" @keyword.directive)
+
+(comptime_or_declaration_clause
+  "$" @keyword.directive
+  "or" @keyword.directive)
 
 (comptime_if_statement
-  "$if" @keyword.directive)
+  "$" @keyword.directive
+  "if" @keyword.directive)
 
 (comptime_or_clause
-  "$or" @keyword.directive)
+  "$" @keyword.directive
+  "or" @keyword.directive)
 
 (comptime_expression
   "$" @keyword.directive)
@@ -167,14 +166,10 @@
 ; Assembly
 ; =============================================================================
 
-(asm_isa_block
+(asm_statement
   isa: (identifier) @attribute)
 
-(asm_statement
-  (string_literal) @string.special)
-
-(asm_isa_block
-  (string_literal) @string.special)
+(asm_body) @string.special
 
 ; =============================================================================
 ; Operators
@@ -187,7 +182,7 @@
   operator: _ @operator)
 
 (cast_expression
-  "::" @operator)
+  operator: _ @operator)
 
 (assignment_expression
   "=" @operator)

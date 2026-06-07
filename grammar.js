@@ -1,7 +1,7 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-// Precedence levels matching Mach's operator precedence (lowest to highest)
+// Precedence levels matching Mach's operator precedence (lowest to highest).
 const PREC = {
     ASSIGNMENT: 1,
     LOGICAL_OR: 2,
@@ -15,13 +15,11 @@ const PREC = {
     TERM: 10,
     FACTOR: 11,
     UNARY: 12,
-    CAST: 13,
-    POSTFIX: 14,
-    PRIMARY: 15,
+    POSTFIX: 13,
+    PRIMARY: 14,
 };
 
-// Numeric type suffix pattern used by integer and float literals.
-// The Mach lexer accepts any of these suffixes on numeric literals.
+// Numeric type suffix accepted on integer and float literals (e.g. 42i64, 3.0f32).
 const TYPE_SUFFIX = choice(
     "u8",
     "u16",
@@ -40,44 +38,46 @@ module.exports = grammar({
 
     extras: ($) => [/\s/, $.comment],
 
+    externals: ($) => [$.asm_body],
+
     conflicts: ($) => [
-        // field access chain in comptime paths
-        [$.comptime_expression],
-        // comptime expression can appear as both a statement and an expression
+        // comptime path can appear as both a statement and an expression atom
         [$.comptime_expression_statement, $._expression],
-        // comptime_field_path vs comptime_expression (call vs path ambiguity)
+        // a $-path can be a bare directive or the lhs of an attribute write
         [$.comptime_expression, $.comptime_field_path],
-        // identifier can be either a primary expression (value) or a type_identifier
+        // $sym.attr = value (attribute write) vs $sym.attr followed by `=`
+        [$.comptime_expression],
+        // a `$` after a comptime-if block: continue the chain or start anew
+        [$.comptime_if_declaration],
+        [$.comptime_if_statement],
+        // an identifier is both a value atom and a type name
         [$._primary_expression, $.type_identifier],
-        // identifier { can start both a primary expression and a typed literal
-        [$._primary_expression, $.typed_literal],
-        // After identifier [, the parser must fork between _primary_expression
-        // (reduce, then extend into index_expression), generic_type (shift [
-        // for type params), and type_identifier (reduce for qualified type).
+        // identifier `[` forks between index, generic call, and qualified type
         [$._primary_expression, $.generic_type, $.type_identifier],
-        // In type position, identifier [ could start generic_type or end type_identifier
+        // identifier `[` in type position: generic_type or end of type_identifier
         [$.generic_type, $.type_identifier],
-        // After type_identifier, [ could continue into generic_type or end the type
+        // after a type_identifier, `[` may continue into generic_type or stop
         [$._type, $.generic_type],
-        // rec/uni { } can be field_declaration_list (type) or initializer_list (literal)
+        // a primitive name inside `[` is either an index value or a type arg
+        [$._primary_expression, $._type],
+        // rec/uni `{` is a field block (type) or an initializer list (literal)
         [$.field_declaration_list, $.initializer_list],
-        // function type optional return type lookahead
+        // function type optional return-type lookahead
         [$.function_type],
     ],
 
     word: ($) => $.identifier,
 
     rules: {
-        // =========================================================================
-        // Top-level
-        // =========================================================================
-        source_file: ($) => repeat($._top_level_item),
+        source_file: ($) => repeat($._declaration),
 
-        _top_level_item: ($) =>
+        comment: ($) => token(seq("#", /.*/)),
+
+        // any declaration may carry leading pub/ext flags in any order
+        _declaration: ($) =>
             choice(
                 $.use_declaration,
-                $.public_declaration,
-                $.extern_declaration,
+                $.forward_declaration,
                 $.type_alias_declaration,
                 $.record_declaration,
                 $.union_declaration,
@@ -85,23 +85,27 @@ module.exports = grammar({
                 $.variable_declaration,
                 $.function_declaration,
                 $.test_declaration,
-                $.comptime_if_statement,
+                $.comptime_if_declaration,
                 $.comptime_expression_statement,
             ),
 
-        // =========================================================================
-        // Comments
-        // =========================================================================
-        comment: ($) => token(seq("#", /.*/)),
+        // pub / ext visibility and linkage flags, any order, zero or more
+        modifiers: ($) => repeat1(choice("pub", "ext")),
 
-        // =========================================================================
-        // Declarations
-        // =========================================================================
-
-        // use [alias:] module.path;
+        // [flags] use [alias:] module.path;
         use_declaration: ($) =>
             seq(
+                optional($.modifiers),
                 "use",
+                optional(seq(field("alias", $.identifier), ":")),
+                field("path", $.module_path),
+                ";",
+            ),
+
+        // fwd [alias:] module.path;  (re-export; always public, never `pub`)
+        forward_declaration: ($) =>
+            seq(
+                "fwd",
                 optional(seq(field("alias", $.identifier), ":")),
                 field("path", $.module_path),
                 ";",
@@ -109,35 +113,10 @@ module.exports = grammar({
 
         module_path: ($) => sep1($.identifier, "."),
 
-        // pub <declaration>
-        public_declaration: ($) =>
-            seq(
-                "pub",
-                choice(
-                    $.extern_declaration,
-                    $.type_alias_declaration,
-                    $.record_declaration,
-                    $.union_declaration,
-                    $.value_declaration,
-                    $.variable_declaration,
-                    $.function_declaration,
-                ),
-            ),
-
-        // ext "ABI:linkage" name: type;
-        extern_declaration: ($) =>
-            seq(
-                "ext",
-                field("abi", $.string_literal),
-                field("name", $.identifier),
-                ":",
-                field("type", $._type),
-                ";",
-            ),
-
-        // def Alias: type;
+        // [flags] def Alias: type;
         type_alias_declaration: ($) =>
             seq(
+                optional($.modifiers),
                 "def",
                 field("name", $.identifier),
                 ":",
@@ -145,18 +124,20 @@ module.exports = grammar({
                 ";",
             ),
 
-        // rec Name[T, U] { field: type; ... }
+        // [flags] rec Name[T, U] { field: type; ... }
         record_declaration: ($) =>
             seq(
+                optional($.modifiers),
                 "rec",
                 field("name", $.identifier),
                 optional($.type_parameters),
                 $.field_declaration_list,
             ),
 
-        // uni Name[T, U] { variant: type; ... }
+        // [flags] uni Name[T, U] { variant: type; ... }
         union_declaration: ($) =>
             seq(
+                optional($.modifiers),
                 "uni",
                 field("name", $.identifier),
                 optional($.type_parameters),
@@ -166,79 +147,120 @@ module.exports = grammar({
         field_declaration_list: ($) =>
             seq("{", repeat($.field_declaration), "}"),
 
+        // a leading `$` marks a comptime field (shared typed-name grammar)
         field_declaration: ($) =>
-            seq(field("name", $.identifier), ":", field("type", $._type), ";"),
-
-        type_parameters: ($) => seq("[", sep1($.identifier, ","), "]"),
-
-        // val name: type = expr;
-        value_declaration: ($) =>
             seq(
-                "val",
+                optional(field("comptime", "$")),
                 field("name", $.identifier),
                 ":",
                 field("type", $._type),
-                "=",
-                field("value", $._expression),
                 ";",
             ),
 
-        // var name: type [= expr];
-        variable_declaration: ($) =>
+        type_parameters: ($) =>
+            seq("[", optional(seq(sep1($.identifier, ","), optional(","))), "]"),
+
+        // [flags] val name [: type] [= expr];
+        value_declaration: ($) =>
             seq(
-                "var",
+                optional($.modifiers),
+                "val",
                 field("name", $.identifier),
-                ":",
-                field("type", $._type),
+                optional(seq(":", field("type", $._type))),
                 optional(seq("=", field("value", $._expression))),
                 ";",
             ),
 
-        // fun [(receiver: type)] name[T](params) [return_type] { body }
+        // [flags] var name [: type] [= expr];
+        variable_declaration: ($) =>
+            seq(
+                optional($.modifiers),
+                "var",
+                field("name", $.identifier),
+                optional(seq(":", field("type", $._type))),
+                optional(seq("=", field("value", $._expression))),
+                ";",
+            ),
+
+        // [flags] fun name[T](params) [return_type] (block | ;)
         function_declaration: ($) =>
             seq(
+                optional($.modifiers),
                 "fun",
-                optional($.method_receiver),
                 field("name", $.identifier),
                 optional($.type_parameters),
                 $.parameter_list,
                 optional(field("return_type", $._type)),
-                $.block,
-            ),
-
-        method_receiver: ($) =>
-            seq(
-                "(",
-                field("receiver_name", $.identifier),
-                ":",
-                field("receiver_type", $._type),
-                ")",
+                choice($.block, ";"),
             ),
 
         parameter_list: ($) =>
             seq(
                 "(",
-                optional(sep1(choice($.parameter, $.variadic_parameter), ",")),
+                optional(
+                    choice(
+                        $.variadic_parameter,
+                        seq(
+                            sep1($.parameter, ","),
+                            optional(seq(",", $.variadic_parameter)),
+                        ),
+                    ),
+                ),
                 ")",
             ),
 
+        // a leading `$` marks a comptime value parameter
         parameter: ($) =>
-            seq(field("name", $.identifier), ":", field("type", $._type)),
+            seq(
+                optional(field("comptime", "$")),
+                field("name", $.identifier),
+                ":",
+                field("type", $._type),
+            ),
 
         variadic_parameter: ($) => "...",
 
-        // test "name" { body }
+        // [flags] test "name" { body }
         test_declaration: ($) =>
-            seq("test", field("name", $.string_literal), $.block),
+            seq(
+                optional($.modifiers),
+                "test",
+                field("name", $.string_literal),
+                $.block,
+            ),
 
-        // =========================================================================
-        // Compile-time constructs
-        // =========================================================================
+        // declaration-scope: $if (cond) { decls } $or (cond) { decls } $or { decls }
+        comptime_if_declaration: ($) =>
+            seq(
+                "$",
+                "if",
+                "(",
+                field("condition", $._expression),
+                ")",
+                $.declaration_block,
+                repeat($.comptime_or_declaration_clause),
+            ),
 
-        // $if (cond) { ... } $or (cond) { ... } $or { ... }
+        comptime_or_declaration_clause: ($) =>
+            choice(
+                seq(
+                    "$",
+                    "or",
+                    "(",
+                    field("condition", $._expression),
+                    ")",
+                    $.declaration_block,
+                ),
+                seq("$", "or", $.declaration_block),
+            ),
+
+        declaration_block: ($) => seq("{", repeat($._declaration), "}"),
+
+        // statement-scope: $if (cond) { stmts } $or (cond) { stmts } $or { stmts }
         comptime_if_statement: ($) =>
             seq(
-                "$if",
+                "$",
+                "if",
                 "(",
                 field("condition", $._expression),
                 ")",
@@ -249,45 +271,40 @@ module.exports = grammar({
         comptime_or_clause: ($) =>
             choice(
                 seq(
-                    "$or",
+                    "$",
+                    "or",
                     "(",
                     field("condition", $._expression),
                     ")",
                     $.block,
                 ),
-                seq("$or", $.block),
-                seq("or", "(", field("condition", $._expression), ")", $.block),
-                seq("or", $.block),
+                seq("$", "or", $.block),
             ),
 
-        // $symbol.attr = value; or $error("msg") etc at top level
+        // $sym.attr = value;  or  $intrinsic(args);
         comptime_expression_statement: ($) =>
             seq($.comptime_expression, optional(";")),
 
-        // $identifier.path... or $intrinsic(args) or $identifier.attr = value
+        // $intrinsic(args) | $sym.attr = value | $mach.target.os
         comptime_expression: ($) =>
             seq(
                 "$",
                 choice(
-                    // $error("message")
+                    // $size_of(T), $error("msg")
                     seq(
                         field("name", $.identifier),
                         "(",
-                        optional(sep1($._expression, ",")),
+                        optional(seq(sep1($._expression, ","), optional(","))),
                         ")",
                     ),
-                    // $symbol.attr = value
+                    // $sym.attr = value
                     seq($.comptime_field_path, "=", $._expression),
-                    // $mach.build.target.os.id  (just a path)
+                    // $mach.target.os  (a bare path)
                     $.comptime_field_path,
                 ),
             ),
 
         comptime_field_path: ($) => sep1($.identifier, "."),
-
-        // =========================================================================
-        // Statements
-        // =========================================================================
 
         block: ($) => seq("{", repeat($._statement), "}"),
 
@@ -304,7 +321,6 @@ module.exports = grammar({
                 $.asm_statement,
                 $.comptime_if_statement,
                 $.comptime_expression_statement,
-                // bare { ... } scope block
                 $.block,
                 $.expression_statement,
             ),
@@ -336,37 +352,27 @@ module.exports = grammar({
                 $.block,
             ),
 
-        // ret [expr];
         return_statement: ($) => seq("ret", optional($._expression), ";"),
 
-        // brk;
         break_statement: ($) => seq("brk", ";"),
 
-        // cnt;
         continue_statement: ($) => seq("cnt", ";"),
 
-        // fin statement;
+        // fin statement (runs at scope exit — Mach's defer)
         defer_statement: ($) => seq("fin", $._statement),
 
-        // asm { ... } or asm { isa { ... } }
+        // asm <isa> { raw assembly body }
         asm_statement: ($) =>
             seq(
                 "asm",
+                field("isa", $.identifier),
                 "{",
-                repeat(choice($.asm_isa_block, $.string_literal)),
+                field("body", $.asm_body),
                 "}",
             ),
 
-        asm_isa_block: ($) =>
-            seq(field("isa", $.identifier), "{", repeat($.string_literal), "}"),
-
-        // =========================================================================
-        // Expressions
-        // =========================================================================
-
-        // _expression is the top-level expression rule. It includes assignment
-        // and all non-assignment forms. Binary/unary/cast operate on _expression
-        // directly so precedence climbing works naturally.
+        // _expression is the top-level expression rule covering assignment and
+        // all non-assignment forms; precedence climbing falls out of the table.
         _expression: ($) =>
             choice(
                 $.assignment_expression,
@@ -381,10 +387,8 @@ module.exports = grammar({
                 $._postfix_expression,
             ),
 
-        // _postfix_expression groups call, index, field access, and primary
-        // atoms into a single left-recursive chain. This ensures the LR parser
-        // keeps [ ( . as valid shifts after reducing an identifier, rather than
-        // eagerly reducing through _expression into expression_statement.
+        // call, index, and field access form a single left-recursive chain so
+        // the LR parser keeps `[ ( .` as valid shifts after an identifier.
         _postfix_expression: ($) =>
             choice(
                 $.call_expression,
@@ -397,6 +401,9 @@ module.exports = grammar({
         _primary_expression: ($) =>
             choice(
                 $.identifier,
+                // primitive type names are ordinary identifiers; they appear in
+                // value position as type arguments to intrinsics ($size_of(u32))
+                $.primitive_type,
                 $.integer_literal,
                 $.float_literal,
                 $.char_literal,
@@ -405,7 +412,7 @@ module.exports = grammar({
                 $.varargs_expression,
             ),
 
-        // a = b
+        // a = b  (right-associative)
         assignment_expression: ($) =>
             prec.right(
                 PREC.ASSIGNMENT,
@@ -416,7 +423,6 @@ module.exports = grammar({
                 ),
             ),
 
-        // a + b, a && b, etc.
         binary_expression: ($) => {
             const table = [
                 [PREC.LOGICAL_OR, "||"],
@@ -445,30 +451,28 @@ module.exports = grammar({
             );
         },
 
-        // !x, -x, ~x, ?x, @x
+        // -x, !x, ~x, ?x (address-of), @x (dereference)
         unary_expression: ($) =>
             prec(
                 PREC.UNARY,
                 seq(
-                    field("operator", choice("!", "-", "~", "?", "@")),
+                    field("operator", choice("-", "!", "~", "?", "@")),
                     field("operand", $._expression),
                 ),
             ),
 
-        // expr::type
+        // expr::type (value conversion) or expr:~type (bit reinterpret)
         cast_expression: ($) =>
             prec.left(
-                PREC.CAST,
+                PREC.POSTFIX,
                 seq(
                     field("value", $._expression),
-                    "::",
+                    field("operator", choice("::", ":~")),
                     field("type", $._type),
                 ),
             ),
 
         // expr(args) or expr[types](args)
-        // Takes _postfix_expression so it chains left-recursively with other
-        // postfix operations (index, field) without going through _expression.
         call_expression: ($) =>
             prec.left(
                 PREC.POSTFIX,
@@ -479,9 +483,15 @@ module.exports = grammar({
                 ),
             ),
 
-        type_arguments: ($) => seq("[", sep1($._type, ","), "]"),
+        type_arguments: ($) =>
+            seq("[", optional(seq(sep1($._type, ","), optional(","))), "]"),
 
-        argument_list: ($) => seq("(", optional(sep1($._expression, ",")), ")"),
+        argument_list: ($) =>
+            seq(
+                "(",
+                optional(seq(sep1($._expression, ","), optional(","))),
+                ")",
+            ),
 
         // expr[index]
         index_expression: ($) =>
@@ -506,15 +516,14 @@ module.exports = grammar({
                 ),
             ),
 
-        // (expr)
         parenthesized_expression: ($) => seq("(", $._expression, ")"),
 
-        // Type{ field: value, ... } or GenericType[T]{ field: value, ... }
+        // Name{...}, module.Name{...}, or Name[T]{...}
         typed_literal: ($) =>
             prec.dynamic(
                 1,
                 seq(
-                    field("type", choice($.identifier, $.generic_type)),
+                    field("type", choice($.type_identifier, $.generic_type)),
                     $.initializer_list,
                 ),
             ),
@@ -523,22 +532,20 @@ module.exports = grammar({
         array_literal: ($) =>
             prec.dynamic(2, seq($.array_type, $.initializer_list)),
 
-        // rec { field: value, ... }
+        // rec { field: value, ... } — anonymous record literal
         record_literal: ($) =>
             prec.dynamic(
                 1,
                 seq(
                     "rec",
                     choice(
-                        // rec { type_def }{ init } — anonymous typed then initialized
                         seq($.field_declaration_list, $.initializer_list),
-                        // rec { field: value, ... } — anonymous literal
                         $.initializer_list,
                     ),
                 ),
             ),
 
-        // uni { field: value, ... }
+        // uni { field: value, ... } — anonymous union literal
         union_literal: ($) =>
             prec.dynamic(
                 1,
@@ -569,21 +576,14 @@ module.exports = grammar({
                 field("value", $._expression),
             ),
 
-        // ...
         varargs_expression: ($) => "...",
 
-        // nil
         nil_literal: ($) => "nil",
-
-        // =========================================================================
-        // Types
-        // =========================================================================
 
         _type: ($) =>
             choice(
                 $.primitive_type,
                 $.pointer_type,
-                $.readonly_pointer_type,
                 $.array_type,
                 $.function_type,
                 $.generic_type,
@@ -607,11 +607,8 @@ module.exports = grammar({
                 "ptr",
             ),
 
-        // *type
+        // *type (nesting **type falls out of the recursion)
         pointer_type: ($) => prec.left(seq("*", $._type)),
-
-        // &type
-        readonly_pointer_type: ($) => prec.left(seq("&", $._type)),
 
         // [N]type
         array_type: ($) =>
@@ -624,7 +621,7 @@ module.exports = grammar({
                 ),
             ),
 
-        // fun(params) return_type
+        // fun(params) [return_type]
         function_type: ($) =>
             seq(
                 "fun",
@@ -643,156 +640,99 @@ module.exports = grammar({
                 optional(field("return_type", $._type)),
             ),
 
-        // Name[T, U]
-        // No prec.left here — this lets tree-sitter GLR-fork between
-        // generic_type (identifier [ type ]) and index_expression
-        // (identifier [ expression ]) when it sees identifier [.
+        // Name[T, U]; no prec.left so tree-sitter can GLR-fork between a generic
+        // type and an index expression after `identifier [`.
         generic_type: ($) =>
             seq(
                 field("name", choice($.identifier, $.type_identifier)),
                 "[",
                 sep1($._type, ","),
+                optional(","),
                 "]",
             ),
 
-        // Anonymous rec { ... } used as type
+        // anonymous rec { ... } used as a type
         record_type: ($) => seq("rec", $.field_declaration_list),
 
-        // Anonymous uni { ... } used as type
+        // anonymous uni { ... } used as a type
         union_type: ($) => seq("uni", $.field_declaration_list),
 
-        // Type name (same as identifier but semantically a type).
-        // Supports both simple names (Point) and qualified paths (allocator.Allocator).
+        // a type name; supports simple (Point) and qualified (core.Thing) paths
         type_identifier: ($) => sep1($.identifier, "."),
 
-        // =========================================================================
-        // Literals
-        // =========================================================================
-
-        // Integer literals: decimal, hex, binary, octal, with optional underscores
-        // and optional numeric type suffix (u8, i64, f32, etc.)
-        //
-        // Examples: 42, 0xFF, 0b1010, 0o77, 1_000_000, 42i64, 0xFFu32
+        // 42, 0xFF, 0b1010, 0o77, 1_000_000, 42i64, 0xFFu32
         integer_literal: ($) =>
             token(
                 choice(
-                    // Hex with optional suffix
                     seq(
                         "0",
                         choice("x", "X"),
                         /[0-9a-fA-F][0-9a-fA-F_]*/,
                         optional(TYPE_SUFFIX),
                     ),
-                    // Binary with optional suffix
                     seq(
                         "0",
                         choice("b", "B"),
                         /[01][01_]*/,
                         optional(TYPE_SUFFIX),
                     ),
-                    // Octal with optional suffix
                     seq(
                         "0",
                         choice("o", "O"),
                         /[0-7][0-7_]*/,
                         optional(TYPE_SUFFIX),
                     ),
-                    // Decimal with optional suffix
                     seq(/[0-9][0-9_]*/, optional(TYPE_SUFFIX)),
                 ),
             ),
 
-        // Float literals: must contain a decimal point, with optional exponent
-        // and optional numeric type suffix.
-        //
-        // Examples: 3.14, 1.0, 0.5e10, 1.5E-3, 3.14f64, 1_000.5_0
+        // 3.14, 1.0, 0.5e10, 1.5E-3, 3.14f64
         float_literal: ($) =>
             token(
                 seq(
                     /[0-9][0-9_]*/,
                     ".",
                     /[0-9][0-9_]*/,
-                    // Optional exponent part: e/E followed by optional sign and digits
                     optional(seq(/[eE]/, optional(/[+-]/), /[0-9][0-9_]*/)),
                     optional(TYPE_SUFFIX),
                 ),
             ),
 
-        // Character literals: 'c' with escape sequences
-        //
-        // Escape sequences: \n \t \r \\ \' \" \0 \xNN
+        // 'c' with escapes \n \t \r \\ \' \0 \xNN
         char_literal: ($) =>
             token(
                 seq(
                     "'",
                     choice(
-                        // Simple escape sequences
                         /\\['"\\ntr0]/,
-                        // Hex escape: \xNN
                         /\\x[0-9a-fA-F]{2}/,
-                        // Any single character except backslash and single quote
                         /[^'\\]/,
                     ),
                     "'",
                 ),
             ),
 
-        // String literals: "..." with escape sequences.
-        // Includes single-line strings and triple-quoted multiline strings.
-        //
-        // Single-line: "hello\nworld"
-        // Multiline:   """multi
-        //                 line"""
-        //
-        // Escape sequences: \n \t \r \\ \' \" \0 \xNN
+        // "..." with escapes \n \t \r \\ \' \" \0 \xNN; may span lines
         string_literal: ($) =>
             token(
-                choice(
-                    // Triple-quoted multiline string: """..."""
-                    // Content can include newlines, single quotes, double quotes (as
-                    // long as fewer than three in a row without backslash escape).
-                    seq(
-                        '"""',
-                        repeat(
-                            choice(
-                                /\\./, // any escape sequence
-                                /[^"\\]/, // any char except quote or backslash
-                                /"[^"\\]/, // single quote followed by non-quote
-                                /""[^"\\]/, // two quotes followed by non-quote
-                            ),
+                seq(
+                    '"',
+                    repeat(
+                        choice(
+                            /\\['"\\ntr0]/,
+                            /\\x[0-9a-fA-F]{2}/,
+                            /[^"\\]/,
                         ),
-                        optional(/""/), // trailing quotes before the close
-                        '"""',
                     ),
-                    // Regular single-line string: "..."
-                    seq(
-                        '"',
-                        repeat(
-                            choice(
-                                // Simple escape sequences
-                                /\\['"\\ntr0]/,
-                                // Hex escape: \xNN
-                                /\\x[0-9a-fA-F]{2}/,
-                                // Any character except backslash, double quote, and newline
-                                /[^"\\\n]/,
-                            ),
-                        ),
-                        '"',
-                    ),
+                    '"',
                 ),
             ),
-
-        // =========================================================================
-        // Identifiers
-        // =========================================================================
 
         identifier: ($) => /[a-zA-Z_][a-zA-Z0-9_]*/,
     },
 });
 
-/**
- * Comma-separated list of one or more items.
- */
+// Comma-separated list of one or more items.
 function sep1(rule, separator) {
     return seq(rule, repeat(seq(separator, rule)));
 }
