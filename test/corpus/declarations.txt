@@ -43,6 +43,37 @@ use allocator;
       (identifier))))
 
 ================================================================================
+fwd: re-export
+================================================================================
+
+fwd std.types.option;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (forward_declaration
+    path: (module_path
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
+fwd: aliased re-export
+================================================================================
+
+fwd opt: std.types.option;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (forward_declaration
+    alias: (identifier)
+    path: (module_path
+      (identifier)
+      (identifier)
+      (identifier))))
+
+================================================================================
 val: simple value declaration
 ================================================================================
 
@@ -96,6 +127,32 @@ var x: i64 = 10;
   (variable_declaration
     name: (identifier)
     type: (primitive_type)
+    value: (integer_literal)))
+
+================================================================================
+val: inferred type
+================================================================================
+
+val n = 42;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    value: (integer_literal)))
+
+================================================================================
+var: inferred type
+================================================================================
+
+var n = 42;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    name: (identifier)
     value: (integer_literal)))
 
 ================================================================================
@@ -326,102 +383,6 @@ fun noop() {
     (block)))
 
 ================================================================================
-fun: value receiver method
-================================================================================
-
-fun (this: Point) sum() i64 {
-    ret this.x + this.y;
-}
-
---------------------------------------------------------------------------------
-
-(source_file
-  (function_declaration
-    (method_receiver
-      receiver_name: (identifier)
-      receiver_type: (type_identifier
-        (identifier)))
-    name: (identifier)
-    (parameter_list)
-    return_type: (primitive_type)
-    (block
-      (return_statement
-        (binary_expression
-          left: (field_expression
-            object: (identifier)
-            field: (identifier))
-          right: (field_expression
-            object: (identifier)
-            field: (identifier)))))))
-
-================================================================================
-fun: pointer receiver method
-================================================================================
-
-fun (this: *Point) move(dx: i64, dy: i64) {
-    this.x = this.x + dx;
-}
-
---------------------------------------------------------------------------------
-
-(source_file
-  (function_declaration
-    (method_receiver
-      receiver_name: (identifier)
-      receiver_type: (pointer_type
-        (type_identifier
-          (identifier))))
-    name: (identifier)
-    (parameter_list
-      (parameter
-        name: (identifier)
-        type: (primitive_type))
-      (parameter
-        name: (identifier)
-        type: (primitive_type)))
-    (block
-      (expression_statement
-        (assignment_expression
-          left: (field_expression
-            object: (identifier)
-            field: (identifier))
-          right: (binary_expression
-            left: (field_expression
-              object: (identifier)
-              field: (identifier))
-            right: (identifier)))))))
-
-================================================================================
-fun: readonly ref receiver method
-================================================================================
-
-fun (this: &Lexer) match_suffix(start: i32, len: i32) i64 {
-    ret 0;
-}
-
---------------------------------------------------------------------------------
-
-(source_file
-  (function_declaration
-    (method_receiver
-      receiver_name: (identifier)
-      receiver_type: (readonly_pointer_type
-        (type_identifier
-          (identifier))))
-    name: (identifier)
-    (parameter_list
-      (parameter
-        name: (identifier)
-        type: (primitive_type))
-      (parameter
-        name: (identifier)
-        type: (primitive_type)))
-    return_type: (primitive_type)
-    (block
-      (return_statement
-        (integer_literal)))))
-
-================================================================================
 fun: generic function
 ================================================================================
 
@@ -448,36 +409,6 @@ fun identity[T](value: T) T {
         (identifier)))))
 
 ================================================================================
-fun: generic method on generic receiver
-================================================================================
-
-fun (this: Pair[T, U]) left_val() T {
-    ret this.left;
-}
-
---------------------------------------------------------------------------------
-
-(source_file
-  (function_declaration
-    (method_receiver
-      receiver_name: (identifier)
-      receiver_type: (generic_type
-        name: (identifier)
-        (type_identifier
-          (identifier))
-        (type_identifier
-          (identifier))))
-    name: (identifier)
-    (parameter_list)
-    return_type: (type_identifier
-      (identifier))
-    (block
-      (return_statement
-        (field_expression
-          object: (identifier)
-          field: (identifier))))))
-
-================================================================================
 fun: variadic function
 ================================================================================
 
@@ -499,6 +430,50 @@ fun sum(count: i64, ...) i64 {
     (block
       (return_statement
         (integer_literal)))))
+
+================================================================================
+fun: comptime value parameter
+================================================================================
+
+fun make($N: u32, x: u32) u32 {
+    ret x;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (identifier)))))
+
+================================================================================
+fun: signature only
+================================================================================
+
+ext fun puts(s: *u8) i32;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (modifiers)
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (pointer_type
+          (primitive_type))))
+    return_type: (primitive_type)))
 
 ================================================================================
 test: simple test declaration
@@ -526,11 +501,11 @@ pub val CONSTANT: i64 = 42;
 --------------------------------------------------------------------------------
 
 (source_file
-  (public_declaration
-    (value_declaration
-      name: (identifier)
-      type: (primitive_type)
-      value: (integer_literal))))
+  (value_declaration
+    (modifiers)
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))
 
 ================================================================================
 pub: public function
@@ -543,22 +518,22 @@ pub fun add(a: i64, b: i64) i64 {
 --------------------------------------------------------------------------------
 
 (source_file
-  (public_declaration
-    (function_declaration
-      name: (identifier)
-      (parameter_list
-        (parameter
-          name: (identifier)
-          type: (primitive_type))
-        (parameter
-          name: (identifier)
-          type: (primitive_type)))
-      return_type: (primitive_type)
-      (block
-        (return_statement
-          (binary_expression
-            left: (identifier)
-            right: (identifier)))))))
+  (function_declaration
+    (modifiers)
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
 
 ================================================================================
 pub: public record
@@ -572,57 +547,60 @@ pub rec Point {
 --------------------------------------------------------------------------------
 
 (source_file
-  (public_declaration
-    (record_declaration
-      name: (identifier)
-      (field_declaration_list
-        (field_declaration
-          name: (identifier)
-          type: (primitive_type))
-        (field_declaration
-          name: (identifier)
-          type: (primitive_type))))))
-
-================================================================================
-ext: extern function declaration
-================================================================================
-
-ext "C" write: fun(fd: i32, buf: *u8, count: u64) i64;
-
---------------------------------------------------------------------------------
-
-(source_file
-  (extern_declaration
-    abi: (string_literal)
+  (record_declaration
+    (modifiers)
     name: (identifier)
-    type: (function_type
-      (identifier)
-      (primitive_type)
-      (identifier)
-      (pointer_type
-        (primitive_type))
-      (identifier)
-      (primitive_type)
-      return_type: (primitive_type))))
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type))
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type)))))
 
 ================================================================================
-pub ext: public extern declaration
+ext: extern function signature
 ================================================================================
 
-pub ext "C" malloc: fun(size: u64) *u8;
+ext fun write(fd: i32, buf: *u8, count: u64) i64;
 
 --------------------------------------------------------------------------------
 
 (source_file
-  (public_declaration
-    (extern_declaration
-      abi: (string_literal)
-      name: (identifier)
-      type: (function_type
-        (identifier)
-        (primitive_type)
-        return_type: (pointer_type
-          (primitive_type))))))
+  (function_declaration
+    (modifiers)
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (pointer_type
+          (primitive_type)))
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)))
+
+================================================================================
+pub ext: combined flags
+================================================================================
+
+pub ext fun malloc(size: u64) *u8;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (modifiers)
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (pointer_type
+      (primitive_type))))
 
 ================================================================================
 multiple declarations in sequence
@@ -635,7 +613,7 @@ rec Point {
     y: i64;
 }
 
-fun (p: *Point) sum() i64 {
+fun sum(p: *Point) i64 {
     ret p.x + p.y;
 }
 
@@ -659,13 +637,13 @@ val PRIVATE_CONST: i64 = 123;
         name: (identifier)
         type: (primitive_type))))
   (function_declaration
-    (method_receiver
-      receiver_name: (identifier)
-      receiver_type: (pointer_type
-        (type_identifier
-          (identifier))))
     name: (identifier)
-    (parameter_list)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (pointer_type
+          (type_identifier
+            (identifier)))))
     return_type: (primitive_type)
     (block
       (return_statement

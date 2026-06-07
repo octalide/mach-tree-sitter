@@ -98,17 +98,18 @@ The grammar covers the full Mach language surface:
 | Feature                                                      | Status |
 | ------------------------------------------------------------ | ------ |
 | Comments (`#`)                                               | ✅     |
-| Imports (`use`)                                              | ✅     |
-| Declarations (`val`, `var`, `def`, `ext`)                    | ✅     |
+| Imports and re-exports (`use`, `fwd`)                        | ✅     |
+| Flags (`pub`, `ext`)                                         | ✅     |
+| Bindings (`val`, `var`) and aliases (`def`)                  | ✅     |
 | Records and unions (`rec`, `uni`)                            | ✅     |
-| Functions and methods (`fun`)                                | ✅     |
+| Functions (`fun`), comptime params (`$name`)                | ✅     |
 | Control flow (`if`, `or`, `for`, `ret`, `brk`, `cnt`, `fin`) | ✅     |
 | Generics (`Type[T]`, `fun name[T]()`)                        | ✅     |
-| Pointers (`*T`, `&T`, `?`, `@`)                              | ✅     |
+| Pointers (`*T`, `**T`), address-of (`?`), deref (`@`)       | ✅     |
 | Arrays (`[N]T`)                                              | ✅     |
-| Type casting (`::`)                                          | ✅     |
+| Type casts (`::` value, `:~` bit reinterpret)               | ✅     |
 | Composite literals (`Type{ ... }`, `[N]T{ ... }`)            | ✅     |
-| Inline assembly (`asm`)                                      | ✅     |
+| Inline assembly (`asm <isa> { ... }`)                       | ✅     |
 | Compile-time (`$if`, `$mach.*`, `$size_of`, etc.)            | ✅     |
 | Tests (`test "name" { ... }`)                                | ✅     |
 | All operators and precedence levels                          | ✅     |
