@@ -456,6 +456,22 @@ val x: u8 = ('0' + rem)::u8;
       type: (primitive_type))))
 
 ================================================================================
+cast: bit reinterpret
+================================================================================
+
+val p: ptr = f:~ptr;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (cast_expression
+      value: (identifier)
+      type: (primitive_type))))
+
+================================================================================
 call: simple function call
 ================================================================================
 
@@ -811,7 +827,8 @@ val p: Point = Point{x: 3, y: 4};
     type: (type_identifier
       (identifier))
     value: (typed_literal
-      type: (identifier)
+      type: (type_identifier
+        (identifier))
       (initializer_list
         (initializer_field
           name: (identifier)
@@ -865,12 +882,14 @@ val line: Line = Line{
     type: (type_identifier
       (identifier))
     value: (typed_literal
-      type: (identifier)
+      type: (type_identifier
+        (identifier))
       (initializer_list
         (initializer_field
           name: (identifier)
           value: (typed_literal
-            type: (identifier)
+            type: (type_identifier
+              (identifier))
             (initializer_list
               (initializer_field
                 name: (identifier)
@@ -881,7 +900,8 @@ val line: Line = Line{
         (initializer_field
           name: (identifier)
           value: (typed_literal
-            type: (identifier)
+            type: (type_identifier
+              (identifier))
             (initializer_list
               (initializer_field
                 name: (identifier)
@@ -904,7 +924,8 @@ val u: IntOrFloat = IntOrFloat{i: 12345};
     type: (type_identifier
       (identifier))
     value: (typed_literal
-      type: (identifier)
+      type: (type_identifier
+        (identifier))
       (initializer_list
         (initializer_field
           name: (identifier)
