@@ -43,10 +43,8 @@ module.exports = grammar({
     conflicts: ($) => [
         // comptime path can appear as both a statement and an expression atom
         [$.comptime_expression_statement, $._expression],
-        // a $-path can be a bare directive or the lhs of an attribute write
+        // a $-path: single identifier matches both call name and bare path head
         [$.comptime_expression, $.comptime_field_path],
-        // $sym.attr = value (attribute write) vs $sym.attr followed by `=`
-        [$.comptime_expression],
         // a `$` after a comptime-if block: continue the chain or start anew
         [$.comptime_if_declaration],
         [$.comptime_if_statement],
@@ -72,6 +70,21 @@ module.exports = grammar({
         source_file: ($) => repeat($._declaration),
 
         comment: ($) => token(seq("#", /.*/)),
+
+        // backtick decorator: `name` or `name(args)`; attaches to the following decl
+        decorator: ($) =>
+            seq(
+                "`",
+                field("name", $.identifier),
+                optional(
+                    seq(
+                        "(",
+                        optional(seq(sep1($._expression, ","), optional(","))),
+                        ")",
+                    ),
+                ),
+                "`",
+            ),
 
         // any declaration may carry leading pub/ext flags in any order
         _declaration: ($) =>
@@ -124,9 +137,10 @@ module.exports = grammar({
                 ";",
             ),
 
-        // [flags] rec Name[T, U] { field: type; ... }
+        // [`decorator`...] [flags] rec Name[T, U] { field: type; ... }
         record_declaration: ($) =>
             seq(
+                repeat($.decorator),
                 optional($.modifiers),
                 "rec",
                 field("name", $.identifier),
@@ -134,9 +148,10 @@ module.exports = grammar({
                 $.field_declaration_list,
             ),
 
-        // [flags] uni Name[T, U] { variant: type; ... }
+        // [`decorator`...] [flags] uni Name[T, U] { variant: type; ... }
         union_declaration: ($) =>
             seq(
+                repeat($.decorator),
                 optional($.modifiers),
                 "uni",
                 field("name", $.identifier),
@@ -160,9 +175,10 @@ module.exports = grammar({
         type_parameters: ($) =>
             seq("[", optional(seq(sep1($.identifier, ","), optional(","))), "]"),
 
-        // [flags] val name [: type] [= expr];
+        // [`decorator`...] [flags] val name [: type] [= expr];
         value_declaration: ($) =>
             seq(
+                repeat($.decorator),
                 optional($.modifiers),
                 "val",
                 field("name", $.identifier),
@@ -171,9 +187,10 @@ module.exports = grammar({
                 ";",
             ),
 
-        // [flags] var name [: type] [= expr];
+        // [`decorator`...] [flags] var name [: type] [= expr];
         variable_declaration: ($) =>
             seq(
+                repeat($.decorator),
                 optional($.modifiers),
                 "var",
                 field("name", $.identifier),
@@ -182,9 +199,10 @@ module.exports = grammar({
                 ";",
             ),
 
-        // [flags] fun name[T](params) [return_type] (block | ;)
+        // [`decorator`...] [flags] fun name[T](params) [return_type] (block | ;)
         function_declaration: ($) =>
             seq(
+                repeat($.decorator),
                 optional($.modifiers),
                 "fun",
                 field("name", $.identifier),
@@ -199,10 +217,19 @@ module.exports = grammar({
                 "(",
                 optional(
                     choice(
+                        // C-style variadic only: fun f(...)
                         $.variadic_parameter,
+                        // comptime pack only: fun f(va: ...)
+                        $.pack_parameter,
                         seq(
                             sep1($.parameter, ","),
-                            optional(seq(",", $.variadic_parameter)),
+                            optional(
+                                seq(
+                                    ",",
+                                    // trailing C-style ... or named pack va: ...
+                                    choice($.variadic_parameter, $.pack_parameter),
+                                ),
+                            ),
                         ),
                     ),
                 ),
@@ -218,7 +245,12 @@ module.exports = grammar({
                 field("type", $._type),
             ),
 
+        // C-style variadic marker (trailing ...)
         variadic_parameter: ($) => "...",
+
+        // comptime variadic pack parameter: name: ...
+        pack_parameter: ($) =>
+            seq(field("name", $.identifier), ":", "..."),
 
         // [flags] test "name" { body }
         test_declaration: ($) =>
@@ -281,25 +313,34 @@ module.exports = grammar({
                 seq("$", "or", $.block),
             ),
 
-        // $sym.attr = value;  or  $intrinsic(args);
+        // $each iterator in iterable { body } — comptime unroll over a pack or $fields(T)
+        comptime_each_statement: ($) =>
+            seq(
+                "$",
+                "each",
+                field("iterator", $.identifier),
+                "in",
+                field("iterable", $._expression),
+                $.block,
+            ),
+
+        // $intrinsic(args);  or  $path.chain;  (attribute-setter `$sym.attr = value` removed in v2.0.0)
         comptime_expression_statement: ($) =>
             seq($.comptime_expression, optional(";")),
 
-        // $intrinsic(args) | $sym.attr = value | $mach.target.os
+        // $intrinsic(args) | $mach.build.os | $project.version | $bin.name
         comptime_expression: ($) =>
             seq(
                 "$",
                 choice(
-                    // $size_of(T), $error("msg")
+                    // $size_of(T), $error("msg"), $fields(T), $type_of(e), $assert(cond, "msg")
                     seq(
                         field("name", $.identifier),
                         "(",
                         optional(seq(sep1($._expression, ","), optional(","))),
                         ")",
                     ),
-                    // $sym.attr = value
-                    seq($.comptime_field_path, "=", $._expression),
-                    // $mach.target.os  (a bare path)
+                    // $mach.build.os, $project.version, $bin.name  (bare comptime path)
                     $.comptime_field_path,
                 ),
             ),
@@ -320,6 +361,7 @@ module.exports = grammar({
                 $.defer_statement,
                 $.asm_statement,
                 $.comptime_if_statement,
+                $.comptime_each_statement,
                 $.comptime_expression_statement,
                 $.block,
                 $.expression_statement,
@@ -387,13 +429,15 @@ module.exports = grammar({
                 $._postfix_expression,
             ),
 
-        // call, index, and field access form a single left-recursive chain so
-        // the LR parser keeps `[ ( .` as valid shifts after an identifier.
+        // call, index, field access, projection, and pack spread form a single
+        // left-recursive chain so the LR parser keeps `[ ( . .[` as valid shifts.
         _postfix_expression: ($) =>
             choice(
                 $.call_expression,
                 $.index_expression,
                 $.field_expression,
+                $.projection_expression,
+                $.pack_spread_expression,
                 $.parenthesized_expression,
                 $._primary_expression,
             ),
@@ -409,7 +453,6 @@ module.exports = grammar({
                 $.char_literal,
                 $.string_literal,
                 $.nil_literal,
-                $.varargs_expression,
             ),
 
         // a = b  (right-associative)
@@ -516,6 +559,26 @@ module.exports = grammar({
                 ),
             ),
 
+        // v.[f] — comptime field projection; `.` then `[` disambiguates from member
+        projection_expression: ($) =>
+            prec.left(
+                PREC.POSTFIX,
+                seq(
+                    field("object", $._postfix_expression),
+                    ".",
+                    "[",
+                    field("index", $._expression),
+                    "]",
+                ),
+            ),
+
+        // expr... — pack spread; used as the trailing argument in a pack-tailed call
+        pack_spread_expression: ($) =>
+            prec.left(
+                PREC.POSTFIX,
+                seq(field("pack", $._postfix_expression), "..."),
+            ),
+
         parenthesized_expression: ($) => seq("(", $._expression, ")"),
 
         // Name{...}, module.Name{...}, or Name[T]{...}
@@ -575,8 +638,6 @@ module.exports = grammar({
                 ),
                 field("value", $._expression),
             ),
-
-        varargs_expression: ($) => "...",
 
         nil_literal: ($) => "nil",
 
