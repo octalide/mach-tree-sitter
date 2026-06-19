@@ -676,26 +676,10 @@ fun f() {
             value: (integer_literal)))))))
 
 ================================================================================
-comptime: attribute assignment
-================================================================================
-
-$main.symbol = "main";
-
---------------------------------------------------------------------------------
-
-(source_file
-  (comptime_expression_statement
-    (comptime_expression
-      (comptime_field_path
-        (identifier)
-        (identifier))
-      (string_literal))))
-
-================================================================================
 comptime: deep field path
 ================================================================================
 
-$mach.build.target.os.id;
+$mach.build.os;
 
 --------------------------------------------------------------------------------
 
@@ -703,8 +687,6 @@ $mach.build.target.os.id;
   (comptime_expression_statement
     (comptime_expression
       (comptime_field_path
-        (identifier)
-        (identifier)
         (identifier)
         (identifier)
         (identifier)))))
@@ -850,3 +832,155 @@ fun classify(x: i64) i64 {
             (integer_literal))))
       (return_statement
         (integer_literal)))))
+
+================================================================================
+comptime: $each over pack
+================================================================================
+
+fun sum(va: ...) i64 {
+    var t: i64 = 0;
+    $each a in va {
+        t = t + a;
+    }
+    ret t;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (pack_parameter
+        name: (identifier)))
+    return_type: (primitive_type)
+    (block
+      (variable_declaration
+        name: (identifier)
+        type: (primitive_type)
+        value: (integer_literal))
+      (comptime_each_statement
+        iterator: (identifier)
+        iterable: (identifier)
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (identifier))))))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+comptime: $each over $fields
+================================================================================
+
+fun f(v: i64) {
+    $each field in $fields(Point) {
+        v = v + 1;
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    (block
+      (comptime_each_statement
+        iterator: (identifier)
+        iterable: (comptime_expression
+          name: (identifier)
+          (identifier))
+        (block
+          (expression_statement
+            (assignment_expression
+              left: (identifier)
+              right: (binary_expression
+                left: (identifier)
+                right: (integer_literal)))))))))
+
+================================================================================
+pack spread: forward va to another pack function
+================================================================================
+
+fun outer(va: ...) i64 {
+    ret sum(va...);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (pack_parameter
+        name: (identifier)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (call_expression
+          function: (identifier)
+          (argument_list
+            (pack_spread_expression
+              pack: (identifier))))))))
+
+================================================================================
+field projection: comptime field accessor
+================================================================================
+
+fun f(v: i64) i64 {
+    ret v.[field];
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (projection_expression
+          object: (identifier)
+          index: (identifier))))))
+
+================================================================================
+comptime: $mach.build.os in $if condition
+================================================================================
+
+$if ($mach.build.os == $mach.os.linux) {
+    use std.runtime.linux.x86_64;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comptime_if_declaration
+    condition: (binary_expression
+      left: (comptime_expression
+        (comptime_field_path
+          (identifier)
+          (identifier)
+          (identifier)))
+      right: (comptime_expression
+        (comptime_field_path
+          (identifier)
+          (identifier)
+          (identifier))))
+    (declaration_block
+      (use_declaration
+        path: (module_path
+          (identifier)
+          (identifier)
+          (identifier)
+          (identifier))))))
