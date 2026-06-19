@@ -658,3 +658,314 @@ val PRIVATE_CONST: i64 = 123;
     name: (identifier)
     type: (primitive_type)
     value: (integer_literal)))
+
+================================================================================
+decorator: bare inline decorator on function
+================================================================================
+
+`inline`
+fun fast(x: i64) i64 {
+    ret x * 2;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (decorator
+      name: (identifier))
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))
+
+================================================================================
+decorator: symbol decorator with string argument
+================================================================================
+
+`symbol("main")`
+fun entry(argc: i64, argv: **u8) i64 {
+    ret 0;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (decorator
+      name: (identifier)
+      (string_literal))
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (pointer_type
+          (pointer_type
+            (primitive_type)))))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+decorator: multiple decorators on a global
+================================================================================
+
+`align(64)` `symbol("g_lit64")`
+pub var g_lit64: u8 = 7;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (decorator
+      name: (identifier)
+      (integer_literal))
+    (decorator
+      name: (identifier)
+      (string_literal))
+    (modifiers)
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))
+
+================================================================================
+decorator: comptime-expr argument to align
+================================================================================
+
+`align($size_of(Pair))`
+pub var g_cmp: u8 = 9;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (decorator
+      name: (identifier)
+      (comptime_expression
+        name: (identifier)
+        (identifier)))
+    (modifiers)
+    name: (identifier)
+    type: (primitive_type)
+    value: (integer_literal)))
+
+================================================================================
+decorator: section and symbol on function
+================================================================================
+
+`section(".hottext")` `symbol("f_hot")`
+fun f_hot(x: i64) i64 { ret x + 1; }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (decorator
+      name: (identifier)
+      (string_literal))
+    (decorator
+      name: (identifier)
+      (string_literal))
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))
+
+================================================================================
+decorator: align on record type
+================================================================================
+
+`align(32)`
+rec Over { a: u8; }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (record_declaration
+    (decorator
+      name: (identifier)
+      (integer_literal))
+    name: (identifier)
+    (field_declaration_list
+      (field_declaration
+        name: (identifier)
+        type: (primitive_type)))))
+
+================================================================================
+decorator: ext function with library and symbol
+================================================================================
+
+`library("ws2_32.dll")` `symbol("WSAStartup")`
+ext fun wsa_startup(ver: u16, data: *u8) i32;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (decorator
+      name: (identifier)
+      (string_literal))
+    (decorator
+      name: (identifier)
+      (string_literal))
+    (modifiers)
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (parameter
+        name: (identifier)
+        type: (pointer_type
+          (primitive_type))))
+    return_type: (primitive_type)))
+
+================================================================================
+fun: pack variadic parameter
+================================================================================
+
+fun sum(va: ...) i64 {
+    ret 0;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (pack_parameter
+        name: (identifier)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+fun: fixed params then pack
+================================================================================
+
+fun bias(base: i64, va: ...) i64 {
+    ret base;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (primitive_type))
+      (pack_parameter
+        name: (identifier)))
+    return_type: (primitive_type)
+    (block
+      (return_statement
+        (identifier)))))
+
+================================================================================
+comptime: $project.version root
+================================================================================
+
+val ver: i64 = $project.version;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)))))
+
+================================================================================
+comptime: $bin.name root
+================================================================================
+
+val name: i64 = $bin.name;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)))))
+
+================================================================================
+comptime: $mach.version path
+================================================================================
+
+val v: i64 = $mach.version;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)))))
+
+================================================================================
+comptime: $mach.os.linux tag
+================================================================================
+
+val x: i64 = $mach.os.linux;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)
+        (identifier)))))
+
+================================================================================
+comptime: $project.target.os string
+================================================================================
+
+val os: i64 = $project.target.os;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (value_declaration
+    name: (identifier)
+    type: (primitive_type)
+    value: (comptime_expression
+      (comptime_field_path
+        (identifier)
+        (identifier)
+        (identifier)))))
