@@ -35,9 +35,9 @@
 (string_literal) @string
 (nil_literal) @constant.builtin
 
-; Backtick decorators
+; #[attr] decorators
 (decorator
-  "`" @punctuation.special
+  "#[" @punctuation.special
   name: (identifier) @attribute)
 
 ; Types

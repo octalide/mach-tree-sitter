@@ -69,12 +69,13 @@ module.exports = grammar({
     rules: {
         source_file: ($) => repeat($._declaration),
 
-        comment: ($) => token(seq("#", /.*/)),
+        // `#` is a line comment EXCEPT when immediately followed by `[` (a decorator)
+        comment: ($) => token(/#([^\[\r\n][^\r\n]*)?/),
 
-        // backtick decorator: `name` or `name(args)`; attaches to the following decl
+        // bracket decorator: #[name] or #[name(args)]; attaches to the following decl
         decorator: ($) =>
             seq(
-                "`",
+                "#[",
                 field("name", $.identifier),
                 optional(
                     seq(
@@ -83,7 +84,7 @@ module.exports = grammar({
                         ")",
                     ),
                 ),
-                "`",
+                "]",
             ),
 
         // any declaration may carry leading pub/ext flags in any order
