@@ -13,17 +13,8 @@
     "comment": {
       "type": "TOKEN",
       "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "#"
-          },
-          {
-            "type": "PATTERN",
-            "value": ".*"
-          }
-        ]
+        "type": "PATTERN",
+        "value": "#([^\\[\\r\\n][^\\r\\n]*)?"
       }
     },
     "decorator": {
@@ -31,7 +22,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "`"
+          "value": "#["
         },
         {
           "type": "FIELD",
@@ -114,7 +105,7 @@
         },
         {
           "type": "STRING",
-          "value": "`"
+          "value": "]"
         }
       ]
     },
@@ -3799,5 +3790,6 @@
     }
   ],
   "inline": [],
-  "supertypes": []
+  "supertypes": [],
+  "reserved": {}
 }

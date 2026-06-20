@@ -663,7 +663,7 @@ val PRIVATE_CONST: i64 = 123;
 decorator: bare inline decorator on function
 ================================================================================
 
-`inline`
+#[inline]
 fun fast(x: i64) i64 {
     ret x * 2;
 }
@@ -690,7 +690,7 @@ fun fast(x: i64) i64 {
 decorator: symbol decorator with string argument
 ================================================================================
 
-`symbol("main")`
+#[symbol("main")]
 fun entry(argc: i64, argv: **u8) i64 {
     ret 0;
 }
@@ -721,7 +721,7 @@ fun entry(argc: i64, argv: **u8) i64 {
 decorator: multiple decorators on a global
 ================================================================================
 
-`align(64)` `symbol("g_lit64")`
+#[align(64)] #[symbol("g_lit64")]
 pub var g_lit64: u8 = 7;
 
 --------------------------------------------------------------------------------
@@ -743,7 +743,7 @@ pub var g_lit64: u8 = 7;
 decorator: comptime-expr argument to align
 ================================================================================
 
-`align($size_of(Pair))`
+#[align($size_of(Pair))]
 pub var g_cmp: u8 = 9;
 
 --------------------------------------------------------------------------------
@@ -764,7 +764,7 @@ pub var g_cmp: u8 = 9;
 decorator: section and symbol on function
 ================================================================================
 
-`section(".hottext")` `symbol("f_hot")`
+#[section(".hottext")] #[symbol("f_hot")]
 fun f_hot(x: i64) i64 { ret x + 1; }
 
 --------------------------------------------------------------------------------
@@ -793,7 +793,7 @@ fun f_hot(x: i64) i64 { ret x + 1; }
 decorator: align on record type
 ================================================================================
 
-`align(32)`
+#[align(32)]
 rec Over { a: u8; }
 
 --------------------------------------------------------------------------------
@@ -813,7 +813,7 @@ rec Over { a: u8; }
 decorator: ext function with library and symbol
 ================================================================================
 
-`library("ws2_32.dll")` `symbol("WSAStartup")`
+#[library("ws2_32.dll")] #[symbol("WSAStartup")]
 ext fun wsa_startup(ver: u16, data: *u8) i32;
 
 --------------------------------------------------------------------------------

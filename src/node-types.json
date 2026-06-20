@@ -4609,6 +4609,10 @@
     "named": false
   },
   {
+    "type": "#[",
+    "named": false
+  },
+  {
     "type": "$",
     "named": false
   },
@@ -4729,10 +4733,6 @@
     "named": false
   },
   {
-    "type": "`",
-    "named": false
-  },
-  {
     "type": "asm",
     "named": false
   },
@@ -4754,7 +4754,8 @@
   },
   {
     "type": "comment",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "def",
