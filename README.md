@@ -1,6 +1,6 @@
 # tree-sitter-mach
 
-[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for the [Mach](https://github.com/octalide/mach) programming language.
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for the [Mach](https://github.com/briar-systems/mach) programming language.
 
 ## Overview
 
@@ -14,7 +14,7 @@ This grammar provides parsing support for Mach source files (`.mach`), enabling:
 
 ### In Zed
 
-This grammar is consumed by the [mach-zed](https://github.com/octalide/mach-zed) extension. You don't need to install it separately — the Zed extension references this repository directly.
+This grammar is consumed by the [mach-zed](https://github.com/briar-systems/mach-zed) extension. You don't need to install it separately — the Zed extension references this repository directly.
 
 ### In Neovim
 
